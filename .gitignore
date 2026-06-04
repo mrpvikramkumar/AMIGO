@@ -1,0 +1,5 @@
+amigo-vite/node_modules
+amigo-vite/dist
+amigo-backend/node_modules
+amigo-backend/.env
+~$*

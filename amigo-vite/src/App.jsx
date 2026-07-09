@@ -83,7 +83,20 @@ export default function App() {
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formState, setFormState] = useState({ type: 'idle', message: '' })
+  const [currentPath, setCurrentPath] = useState(window.location.pathname)
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+
+  useEffect(() => {
+    const onPopState = () => setCurrentPath(window.location.pathname)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  const navigate = (path) => {
+    window.history.pushState({}, '', path)
+    setCurrentPath(path)
+    window.scrollTo(0, 0)
+  }
 
   useEffect(() => {
     // SCROLL PROGRESS BAR + GO-TOP + NAVBAR
@@ -149,17 +162,35 @@ export default function App() {
     }
     rafId = requestAnimationFrame(animRing)
 
+    // HOVER EVENTS
     const hoverTargets = document.querySelectorAll('a,button,.mission-card,.step-card,.highlight-card')
     const onEnter = () => { if (ring) { ring.style.width = '52px'; ring.style.height = '52px'; ring.style.borderColor = 'rgba(232,16,16,0.8)' } }
     const onLeave = () => { if (ring) { ring.style.width = '32px'; ring.style.height = '32px'; ring.style.borderColor = 'rgba(232,16,16,0.5)' } }
     hoverTargets.forEach(el => { el.addEventListener('mouseenter', onEnter); el.addEventListener('mouseleave', onLeave) })
 
-    // SCROLL REVEAL
+    // CAROUSEL
+    const carouselTimer = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % GALLERY_IMAGES.length)
+    }, 4000)
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('load', hideLoader)
+      if (ham) ham.removeEventListener('click', onHamClick)
+      document.removeEventListener('mousemove', onMouseMove)
+      if (rafId) cancelAnimationFrame(rafId)
+      hoverTargets.forEach(el => { el.removeEventListener('mouseenter', onEnter); el.removeEventListener('mouseleave', onLeave) })
+      clearInterval(carouselTimer)
+    }
+  }, [])
+
+  useEffect(() => {
+    // SCROLL REVEAL (Re-run on path change)
     const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) } })
     }, { threshold: 0.12 })
-    reveals.forEach(el => obs.observe(el))
+    reveals.forEach(el => { el.classList.remove('visible'); obs.observe(el) })
 
     // COUNT UP
     function countUp(el, target, duration = 1800) {
@@ -195,24 +226,12 @@ export default function App() {
       })
     }, 100)
 
-    // Carousel Autoplay
-    const carouselTimer = setInterval(() => {
-      setCarouselIndex((prev) => (prev + 1) % GALLERY_IMAGES.length)
-    }, 4000)
-
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('load', hideLoader)
-      if (ham) ham.removeEventListener('click', onHamClick)
-      document.removeEventListener('mousemove', onMouseMove)
-      if (rafId) cancelAnimationFrame(rafId)
-      hoverTargets.forEach(el => { el.removeEventListener('mouseenter', onEnter); el.removeEventListener('mouseleave', onLeave) })
       obs.disconnect()
       statsObs.disconnect()
       clearTimeout(staggerTimer)
-      clearInterval(carouselTimer)
     }
-  }, [])
+  }, [currentPath])
 
   const handleContactSubmit = async (event) => {
     event.preventDefault()
@@ -277,156 +296,196 @@ export default function App() {
       </div>
 
       <nav id="navbar">
-        <a href="#" className="nav-logo">
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-logo">
           <img src="/AMIGO-BG-REMOVED.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 120, width: 120, marginLeft: 30 }} />
         </a>
         <ul className="nav-links">
-          <li><a href="#mission">About Us</a></li>
-          <li><a href="#electrical">Electrical</a></li>
-          <li><a href="#electronics">Electronics</a></li>
-          <li><a href="#location" className="nav-cta">Contact Us</a></li>
-        </ul>
+          <li><a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>About Us</a></li>
+          <li className="dropdown">
+            <a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }}>Services</a>
+            <ul className="dropdown-menu" style={{ marginTop: 14 }}>
+              <li><a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); }}>Electrical</a></li>
+              <li><a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); }}>Electronic</a></li>
+              <li><a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); }}>Mechanical</a></li>
+              <li><a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); }}>Service Provided</a></li>
+              <li><a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); }}>Trading</a></li>
+              <li><a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); }}>IT Support</a></li>
+            </ul>
+          </li>
+          <li><a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); }}>Gallery</a></li>
+          <li><a href="/contact-us" className="nav-cta" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Contact Us</a></li>
+        </ul >
         <div className="hamburger" id="hamburger">
           <span></span><span></span><span></span>
         </div>
-      </nav>
+      </nav >
 
       <div className="mobile-menu" id="mobileMenu">
-        <a href="#mission" onClick={() => window.closeMobile?.()}>About Us</a>
-        <a href="#electrical" onClick={() => window.closeMobile?.()}>Electrical</a>
-        <a href="#electronics" onClick={() => window.closeMobile?.()}>Electronics</a>
-        <a href="#how-we-work" onClick={() => window.closeMobile?.()}>How We Work</a>
-        <a href="#location" onClick={() => window.closeMobile?.()}>Contact Us</a>
+        <a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); window.closeMobile?.(); }}>About Us</a>
+        <a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); window.closeMobile?.(); }}>Services</a>
+        <div className="mobile-dropdown">
+          <a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); window.closeMobile?.(); }}>- Electrical</a>
+          <a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); window.closeMobile?.(); }}>- Electronic</a>
+          <a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); window.closeMobile?.(); }}>- Mechanical</a>
+          <a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); window.closeMobile?.(); }}>- Service Provided</a>
+          <a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); window.closeMobile?.(); }}>- Trading</a>
+          <a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); window.closeMobile?.(); }}>- IT Support</a>
+        </div>
+        <a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); window.closeMobile?.(); }}>Gallery</a>
+        <a href="/contact-us" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); window.closeMobile?.(); }}>Contact Us</a>
       </div>
 
       {/* ─── HERO ─── */}
-      <section id="hero">
-        <div className="hero-bg-grid"></div>
-        <div className="hero-bg-glow"></div>
-        <div className="hero-circuit-lines">
-          <svg className="circuit-svg" viewBox="0 0 1440 300" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 200 L200 200 L200 120 L400 120 L400 200 L600 200 L600 80 L800 80 L800 200 L1000 200 L1000 140 L1200 140 L1200 200 L1440 200" stroke="#E81010" strokeWidth="2" fill="none" />
-            <circle cx="200" cy="200" r="6" fill="#E81010" /><circle cx="400" cy="120" r="6" fill="#E81010" />
-            <circle cx="600" cy="200" r="6" fill="#E81010" /><circle cx="800" cy="80" r="6" fill="#E81010" />
-            <circle cx="1000" cy="200" r="6" fill="#E81010" /><circle cx="1200" cy="140" r="6" fill="#E81010" />
-            <path d="M0 260 L300 260 L300 180 L500 180 L500 260 L700 260 L700 160 L900 160 L900 260 L1100 260" stroke="#E81010" strokeWidth="1.5" fill="none" opacity="0.5" />
-          </svg>
-        </div>
-        <div className="hero-inner">
-          <div className="hero-content">
-            <div className="hero-badge"><span className="dot"></span> Electronic Systems Integrator</div>
-            <h1 className="hero-h1">Precision Built<span className="accent">Electronics</span>Integration</h1>
-            <p className="hero-p">From PCBs and ICs to complete electronic assemblies — we design, build, and integrate cutting-edge electronic systems for industry and innovation.</p>
-            <div className="hero-btns">
-              <a href="#mission" className="btn-primary">Discover More</a>
-              <a href="#location" className="btn-outline">Get In Touch</a>
+      {
+        (currentPath === '/' || currentPath === '') && (
+          <section id="hero">
+            <div className="hero-bg-grid"></div>
+            <div className="hero-bg-glow"></div>
+            <div className="hero-circuit-lines">
+              <svg className="circuit-svg" viewBox="0 0 1440 300" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 200 L200 200 L200 120 L400 120 L400 200 L600 200 L600 80 L800 80 L800 200 L1000 200 L1000 140 L1200 140 L1200 200 L1440 200" stroke="#E81010" strokeWidth="2" fill="none" />
+                <circle cx="200" cy="200" r="6" fill="#E81010" /><circle cx="400" cy="120" r="6" fill="#E81010" />
+                <circle cx="600" cy="200" r="6" fill="#E81010" /><circle cx="800" cy="80" r="6" fill="#E81010" />
+                <circle cx="1000" cy="200" r="6" fill="#E81010" /><circle cx="1200" cy="140" r="6" fill="#E81010" />
+                <path d="M0 260 L300 260 L300 180 L500 180 L500 260 L700 260 L700 160 L900 160 L900 260 L1100 260" stroke="#E81010" strokeWidth="1.5" fill="none" opacity="0.5" />
+              </svg>
             </div>
-          </div>
-          <div className="hero-visual">
-            <div className="pcb-board" id="pcbBoard">
-              <div className="pcb-trace" style={{ width: 180, height: 3, top: 80, left: 30 }}></div>
-              <div className="pcb-trace" style={{ width: 3, height: 80, top: 80, left: 80 }}></div>
-              <div className="pcb-trace" style={{ width: 120, height: 3, top: 160, left: 80 }}></div>
-              <div className="pcb-trace" style={{ width: 3, height: 60, top: 220, left: 200 }}></div>
-              <div className="pcb-trace" style={{ width: 100, height: 3, top: 280, left: 100 }}></div>
-              <div className="pcb-trace" style={{ width: 3, height: 100, top: 180, left: 300 }}></div>
-              <div className="pcb-trace" style={{ width: 80, height: 3, top: 180, left: 220 }}></div>
-              <div className="ic-chip" style={{ width: 80, height: 50, top: 100, left: 140 }} data-label="IC-01"></div>
-              <div className="ic-chip" style={{ width: 60, height: 40, top: 200, left: 60 }} data-label="MCU"></div>
-              <div className="ic-chip" style={{ width: 50, height: 50, top: 60, left: 260 }} data-label="OSC"></div>
-              <div className="pin-row" style={{ top: 95, left: 148 }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
-              <div className="pin-row" style={{ top: 148, left: 148, transform: 'rotate(180deg)' }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
-              <div className="led-dot" style={{ width: 12, height: 12, background: '#E81010', top: 240, left: 260, boxShadow: '0 0 10px #E81010' }}></div>
-              <div className="led-dot" style={{ width: 10, height: 10, background: '#00ff88', top: 40, left: 40, boxShadow: '0 0 10px #00ff88', animationDelay: '0.7s' }}></div>
-              <div className="led-dot" style={{ width: 8, height: 8, background: '#ffaa00', top: 300, left: 180, boxShadow: '0 0 8px #ffaa00', animationDelay: '1.3s' }}></div>
-              <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, left: 12 }}></div>
-              <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, right: 12 }}></div>
-              <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, left: 12 }}></div>
-              <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, right: 12 }}></div>
+            <div className="hero-inner">
+              <div className="hero-content">
+                <div className="hero-badge"><span className="dot"></span> Electronic Systems Integrator</div>
+                <h1 className="hero-h1">Precision Built<span className="accent">Electronics</span>Integration</h1>
+                <p className="hero-p">From PCBs and ICs to complete electronic assemblies — we design, build, and integrate cutting-edge electronic systems for industry and innovation.</p>
+                <div className="hero-btns">
+                  <a href="/about-us" className="btn-primary" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>Discover More</a>
+                  <a href="/contact-us" className="btn-outline" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Get In Touch</a>
+                </div>
+              </div>
+              <div className="hero-visual">
+                <div className="pcb-board" id="pcbBoard">
+                  <div className="pcb-trace" style={{ width: 180, height: 3, top: 80, left: 30 }}></div>
+                  <div className="pcb-trace" style={{ width: 3, height: 80, top: 80, left: 80 }}></div>
+                  <div className="pcb-trace" style={{ width: 120, height: 3, top: 160, left: 80 }}></div>
+                  <div className="pcb-trace" style={{ width: 3, height: 60, top: 220, left: 200 }}></div>
+                  <div className="pcb-trace" style={{ width: 100, height: 3, top: 280, left: 100 }}></div>
+                  <div className="pcb-trace" style={{ width: 3, height: 100, top: 180, left: 300 }}></div>
+                  <div className="pcb-trace" style={{ width: 80, height: 3, top: 180, left: 220 }}></div>
+                  <div className="ic-chip" style={{ width: 80, height: 50, top: 100, left: 140 }} data-label="IC-01"></div>
+                  <div className="ic-chip" style={{ width: 60, height: 40, top: 200, left: 60 }} data-label="MCU"></div>
+                  <div className="ic-chip" style={{ width: 50, height: 50, top: 60, left: 260 }} data-label="OSC"></div>
+                  <div className="pin-row" style={{ top: 95, left: 148 }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
+                  <div className="pin-row" style={{ top: 148, left: 148, transform: 'rotate(180deg)' }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
+                  <div className="led-dot" style={{ width: 12, height: 12, background: '#E81010', top: 240, left: 260, boxShadow: '0 0 10px #E81010' }}></div>
+                  <div className="led-dot" style={{ width: 10, height: 10, background: '#00ff88', top: 40, left: 40, boxShadow: '0 0 10px #00ff88', animationDelay: '0.7s' }}></div>
+                  <div className="led-dot" style={{ width: 8, height: 8, background: '#ffaa00', top: 300, left: 180, boxShadow: '0 0 8px #ffaa00', animationDelay: '1.3s' }}></div>
+                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, left: 12 }}></div>
+                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, right: 12 }}></div>
+                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, left: 12 }}></div>
+                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, right: 12 }}></div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        )
+      }
 
-      {/* ─── MISSION ─── */}
-      <section id="mission">
-        <div className="container">
-          <div className="mission-grid">
-            <div className="reveal-left">
-              <span className="section-tag">Our Mission</span>
-              <h2 className="section-h2">Integrating <span className="red">Tomorrow's</span> Electronics, Today</h2>
-              <p className="section-p">AMIGO Integrators Pvt. Ltd., established on 08 July 2020, is a specialized engineering company delivering high-reliability solutions in the defence sector. Our core expertise lies in Cable Harnessing, Electrical &amp; Mechanical Integration, and system-level assembly for mission-critical applications.</p>
-              <ul className="values-list">
-                <li>Precision engineering with ISO-grade quality control standards across all PCB and IC integrations.</li>
-                <li>End-to-end solutions from schematic design to final product delivery and field support.</li>
-                <li>Committed to innovation, leveraging the latest semiconductor and embedded technologies.</li>
-                <li>Sustainable and reliable — our systems are built to last, with full lifecycle support.</li>
-              </ul>
-            </div>
-            <div className="mission-visual reveal-right">
-              <div className="mission-card"><div className="mission-card-icon">🎯</div><h3>Our Vision</h3><p>To become India's leading electronic systems integrator, known for precision, reliability, and innovation in every component we deliver.</p></div>
-              <div className="mission-card" style={{ transitionDelay: '0.1s' }}><div className="mission-card-icon">⚡</div><h3>What We Do</h3><p>PCB design &amp; fabrication, IC integration, breadboard prototyping, embedded system assembly, and custom electronic solutions for OEM and industrial clients.</p></div>
-              <div className="mission-card" style={{ transitionDelay: '0.2s' }}><div className="mission-card-icon">🔬</div><h3>Our Commitment</h3><p>Every component is sourced, tested, and integrated with meticulous attention to specification — because in electronics, precision is everything.</p></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── COMPANY PROFILE ─── */}
-      <section id="company-profile">
-        <div className="container">
-          <div className="profile-highlights">
-            {PROFILE_HIGHLIGHTS.map((group) => (
-              <article key={group.title} className="highlight-card mission-card">
-                <h3>{group.title}</h3>
-                <ul>{group.items.map((item) => (<li key={item}>{item}</li>))}</ul>
-              </article>
-            ))}
-          </div>
-
-          {/* Full-width carousel */}
-          <div className="carousel-section" style={{ marginTop: '48px' }}>
-            <h3 className="section-h2" style={{ fontSize: '28px', marginBottom: '24px' }}>Project <span className="red">Gallery</span></h3>
-            <div className="carousel-container">
-              <div className="carousel-track" style={{ transform: `translateX(-${carouselIndex * 100}%)` }}>
-                {GALLERY_IMAGES.map((img, i) => (
-                  <div key={i} className="carousel-slide">
-                    <img src={img.src} alt={img.caption} />
-                    <div className="carousel-caption">{img.caption}</div>
+      {/* ─── ABOUT US ─── */}
+      {
+        (currentPath === '/' || currentPath === '/about-us') && (
+          <>
+            <section id="mission">
+              <div className="container">
+                <div className="mission-grid">
+                  <div className="reveal-left">
+                    <span className="section-tag">Our Mission</span>
+                    <h2 className="section-h2">Integrating <span className="red">Tomorrow's</span> Electronics, Today</h2>
+                    <p className="section-p">AMIGO Integrators Pvt. Ltd., established on 08 July 2020, is a specialized engineering company delivering high-reliability solutions in the defence sector. Our core expertise lies in Cable Harnessing, Electrical &amp; Mechanical Integration, and system-level assembly for mission-critical applications.</p>
+                    <ul className="values-list">
+                      <li>Precision engineering with ISO-grade quality control standards across all PCB and IC integrations.</li>
+                      <li>End-to-end solutions from schematic design to final product delivery and field support.</li>
+                      <li>Committed to innovation, leveraging the latest semiconductor and embedded technologies.</li>
+                      <li>Sustainable and reliable — our systems are built to last, with full lifecycle support.</li>
+                    </ul>
                   </div>
-                ))}
+                  <div className="mission-visual reveal-right">
+                    <div className="mission-card"><div className="mission-card-icon">🎯</div><h3>Our Vision</h3><p>To become India's leading electronic systems integrator, known for precision, reliability, and innovation in every component we deliver.</p></div>
+                    <div className="mission-card" style={{ transitionDelay: '0.1s' }}><div className="mission-card-icon">⚡</div><h3>What We Do</h3><p>PCB design &amp; fabrication, IC integration, breadboard prototyping, embedded system assembly, and custom electronic solutions for OEM and industrial clients.</p></div>
+                    <div className="mission-card" style={{ transitionDelay: '0.2s' }}><div className="mission-card-icon">🔬</div><h3>Our Commitment</h3><p>Every component is sourced, tested, and integrated with meticulous attention to specification — because in electronics, precision is everything.</p></div>
+                  </div>
+                </div>
               </div>
-              <button className="carousel-prev" onClick={goToPrevSlide} title="Previous image">&#10094;</button>
-              <button className="carousel-next" onClick={goToNextSlide} title="Next image">&#10095;</button>
-              <div className="carousel-dots">
-                {GALLERY_IMAGES.map((_, i) => (
-                  <span key={i} className={`carousel-dot-item ${i === carouselIndex ? 'active' : ''}`} onClick={() => setCarouselIndex(i)}></span>
-                ))}
+            </section>
+
+            {/* ─── COMPANY PROFILE ─── */}
+            <section id="company-profile">
+              <div className="container">
+                <div className="profile-highlights">
+                  {PROFILE_HIGHLIGHTS.map((group) => (
+                    <article key={group.title} className="highlight-card mission-card">
+                      <h3>{group.title}</h3>
+                      <ul>{group.items.map((item) => (<li key={item}>{item}</li>))}</ul>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </>
+        )
+      }
+
+      {/* ─── GALLERY ─── */}
+      {
+        (currentPath === '/' || currentPath === '/gallery') && (
+          <section id="gallery" style={{ padding: '72px 0', background: 'var(--white)' }}>
+            <div className="container">
+              {/* Full-width carousel */}
+              <div className="carousel-section">
+                <h3 className="section-h2" style={{ fontSize: '28px', marginBottom: '24px' }}>Project <span className="red">Gallery</span></h3>
+                <div className="carousel-container">
+                  <div className="carousel-track" style={{ transform: `translateX(-${carouselIndex * 100}%)` }}>
+                    {GALLERY_IMAGES.map((img, i) => (
+                      <div key={i} className="carousel-slide">
+                        <img src={img.src} alt={img.caption} />
+                        <div className="carousel-caption">{img.caption}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="carousel-prev" onClick={goToPrevSlide} title="Previous image">&#10094;</button>
+                  <button className="carousel-next" onClick={goToNextSlide} title="Next image">&#10095;</button>
+                  <div className="carousel-dots">
+                    {GALLERY_IMAGES.map((_, i) => (
+                      <span key={i} className={`carousel-dot-item ${i === carouselIndex ? 'active' : ''}`} onClick={() => setCarouselIndex(i)}></span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        )
+      }
 
-      {/* ─── HOW WE WORK ─── */}
-      <section id="how-we-work">
-        <div className="container">
-          <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto' }} className="reveal">
-            <span className="section-tag">How We Work</span>
-            <h2 className="section-h2">Our <span className="red">Process</span></h2>
-            <p className="section-p">A streamlined, transparent workflow from first consultation to final delivery — ensuring quality at every stage.</p>
-          </div>
-          <div className="steps-grid" style={{ marginTop: 64 }}>
-            <div className="step-card reveal" style={{ transitionDelay: '0s' }}><div className="step-num">01</div><div className="step-icon">📋</div><h3>Requirement Analysis</h3><p>We begin by deeply understanding your project scope, technical specifications, component needs, and timeline constraints through detailed consultation.</p></div>
-            <div className="step-card reveal" style={{ transitionDelay: '0.1s' }}><div className="step-num">02</div><div className="step-icon">🖥️</div><h3>Design &amp; Prototyping</h3><p>Our engineers create schematic designs, PCB layouts, and breadboard prototypes — iterating quickly to validate circuitry before full production.</p></div>
-            <div className="step-card reveal" style={{ transitionDelay: '0.2s' }}><div className="step-num">03</div><div className="step-icon">⚙️</div><h3>Integration &amp; Assembly</h3><p>Precision integration of ICs, passive components, and connectors using SMT and through-hole techniques, with strict ESD protocols throughout.</p></div>
-            <div className="step-card reveal" style={{ transitionDelay: '0.3s' }}><div className="step-num">04</div><div className="step-icon">✅</div><h3>Test &amp; Delivery</h3><p>Rigorous functional testing, quality inspection, and burn-in validation before delivery — backed by our post-delivery technical support guarantee.</p></div>
-          </div>
-        </div>
-      </section>
+      {/* ─── SERVICES ─── */}
+      {
+        (currentPath === '/' || currentPath.startsWith('/services')) && (
+          <>
+            {/* ─── HOW WE WORK ─── */}
+            <section id="how-we-work">
+              <div className="container">
+                <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto' }} className="reveal">
+                  <span className="section-tag">How We Work</span>
+                  <h2 className="section-h2">Our <span className="red">Process</span></h2>
+                  <p className="section-p">A streamlined, transparent workflow from first consultation to final delivery — ensuring quality at every stage.</p>
+                </div>
+                <div className="steps-grid" style={{ marginTop: 64 }}>
+                  <div className="step-card reveal" style={{ transitionDelay: '0s' }}><div className="step-num">01</div><div className="step-icon">📋</div><h3>Requirement Analysis</h3><p>We begin by deeply understanding your project scope, technical specifications, component needs, and timeline constraints through detailed consultation.</p></div>
+                  <div className="step-card reveal" style={{ transitionDelay: '0.1s' }}><div className="step-num">02</div><div className="step-icon">🖥️</div><h3>Design &amp; Prototyping</h3><p>Our engineers create schematic designs, PCB layouts, and breadboard prototypes — iterating quickly to validate circuitry before full production.</p></div>
+                  <div className="step-card reveal" style={{ transitionDelay: '0.2s' }}><div className="step-num">03</div><div className="step-icon">⚙️</div><h3>Integration &amp; Assembly</h3><p>Precision integration of ICs, passive components, and connectors using SMT and through-hole techniques, with strict ESD protocols throughout.</p></div>
+                  <div className="step-card reveal" style={{ transitionDelay: '0.3s' }}><div className="step-num">04</div><div className="step-icon">✅</div><h3>Test &amp; Delivery</h3><p>Rigorous functional testing, quality inspection, and burn-in validation before delivery — backed by our post-delivery technical support guarantee.</p></div>
+                </div>
+              </div>
+            </section>
 
-      {/* ─── STATS ─── */}
-      {/* <section id="stats">
+            {/* ─── STATS ─── */}
+            {/* <section id="stats">
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item reveal"><div className="stat-num" data-count="200">0</div><div className="stat-label">Projects Done</div></div>
@@ -437,99 +496,106 @@ export default function App() {
         </div>
       </section> */}
 
-      {/* ─── ELECTRICAL ─── */}
-      <section id="electrical">
-        <div className="container">
-          <div style={{ maxWidth: 640, marginBottom: 56 }} className="reveal">
-            <span className="section-tag">Electrical</span>
-            <h2 className="section-h2">Electrical <span className="red">Systems &amp; Solutions</span></h2>
-            <p className="section-p">Robust electrical infrastructure and control systems designed for reliability, safety, and industrial-grade performance.</p>
-          </div>
-          <div className="services-grid">
-            <div className="service-card reveal" style={{ transitionDelay: '0s' }}><div className="service-card-icon">⚡</div><h3>Control Panel Design</h3><p>Custom LT/HT control panels with PLC integration, SCADA compatibility, and full IEC compliance for manufacturing and process industries.</p><div className="tag-list"><span className="tag">PLC</span><span className="tag">SCADA</span><span className="tag">IEC</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.1s' }}><div className="service-card-icon">🔌</div><h3>Power Distribution</h3><p>Design and commissioning of power distribution boards, bus-bar systems, and UPS solutions ensuring uninterrupted supply chains.</p><div className="tag-list"><span className="tag">LT/HT</span><span className="tag">UPS</span><span className="tag">Bus-bar</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.2s' }}><div className="service-card-icon">🏭</div><h3>Industrial Wiring</h3><p>Precision cable management, trunking, and industrial wiring for automation lines, conveyor systems, and OEM machinery.</p><div className="tag-list"><span className="tag">Automation</span><span className="tag">OEM</span><span className="tag">Cable Mgmt</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.3s' }}><div className="service-card-icon">🛡️</div><h3>Safety Systems</h3><p>Emergency stop circuits, safety relay integration, and functional safety design in compliance with ISO 13849 standards.</p><div className="tag-list"><span className="tag">ISO 13849</span><span className="tag">E-Stop</span><span className="tag">Safety PLC</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.4s' }}><div className="service-card-icon">📊</div><h3>Energy Monitoring</h3><p>Smart energy meters, power quality analyzers, and IoT-enabled dashboards to optimize consumption and reduce operational costs.</p><div className="tag-list"><span className="tag">IoT</span><span className="tag">Smart Meter</span><span className="tag">PMAC</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.5s' }}><div className="service-card-icon">🔧</div><h3>AMC &amp; Retrofitting</h3><p>Annual maintenance contracts and legacy system upgrades — breathing new efficiency into existing electrical infrastructure.</p><div className="tag-list"><span className="tag">AMC</span><span className="tag">Retrofit</span><span className="tag">Upgrades</span></div></div>
-          </div>
-        </div>
-      </section>
+            {/* ─── ELECTRICAL ─── */}
+            <section id="electrical">
+              <div className="container">
+                <div style={{ maxWidth: 640, marginBottom: 56 }} className="reveal">
+                  <span className="section-tag">Electrical</span>
+                  <h2 className="section-h2">Electrical <span className="red">Systems &amp; Solutions</span></h2>
+                  <p className="section-p">Robust electrical infrastructure and control systems designed for reliability, safety, and industrial-grade performance.</p>
+                </div>
+                <div className="services-grid">
+                  <div className="service-card reveal" style={{ transitionDelay: '0s' }}><div className="service-card-icon">⚡</div><h3>Control Panel Design</h3><p>Custom LT/HT control panels with PLC integration, SCADA compatibility, and full IEC compliance for manufacturing and process industries.</p><div className="tag-list"><span className="tag">PLC</span><span className="tag">SCADA</span><span className="tag">IEC</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.1s' }}><div className="service-card-icon">🔌</div><h3>Power Distribution</h3><p>Design and commissioning of power distribution boards, bus-bar systems, and UPS solutions ensuring uninterrupted supply chains.</p><div className="tag-list"><span className="tag">LT/HT</span><span className="tag">UPS</span><span className="tag">Bus-bar</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.2s' }}><div className="service-card-icon">🏭</div><h3>Industrial Wiring</h3><p>Precision cable management, trunking, and industrial wiring for automation lines, conveyor systems, and OEM machinery.</p><div className="tag-list"><span className="tag">Automation</span><span className="tag">OEM</span><span className="tag">Cable Mgmt</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.3s' }}><div className="service-card-icon">🛡️</div><h3>Safety Systems</h3><p>Emergency stop circuits, safety relay integration, and functional safety design in compliance with ISO 13849 standards.</p><div className="tag-list"><span className="tag">ISO 13849</span><span className="tag">E-Stop</span><span className="tag">Safety PLC</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.4s' }}><div className="service-card-icon">📊</div><h3>Energy Monitoring</h3><p>Smart energy meters, power quality analyzers, and IoT-enabled dashboards to optimize consumption and reduce operational costs.</p><div className="tag-list"><span className="tag">IoT</span><span className="tag">Smart Meter</span><span className="tag">PMAC</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.5s' }}><div className="service-card-icon">🔧</div><h3>AMC &amp; Retrofitting</h3><p>Annual maintenance contracts and legacy system upgrades — breathing new efficiency into existing electrical infrastructure.</p><div className="tag-list"><span className="tag">AMC</span><span className="tag">Retrofit</span><span className="tag">Upgrades</span></div></div>
+                </div>
+              </div>
+            </section>
 
-      {/* ─── ELECTRONICS ─── */}
-      <section id="electronics">
-        <div className="container">
-          <div style={{ maxWidth: 640, marginBottom: 56 }} className="reveal">
-            <span className="section-tag">Electronics</span>
-            <h2 className="section-h2">Electronic <span className="red">Components &amp; Integration</span></h2>
-            <p className="section-p">From bare PCBs to complex IC-level assemblies — we handle every layer of your electronic stack with precision and expertise.</p>
-          </div>
-          <div className="services-grid">
-            <div className="service-card reveal" style={{ transitionDelay: '0s' }}><div className="service-card-icon">🔲</div><h3>PCB Design &amp; Fabrication</h3><p>Multi-layer PCB design using Altium &amp; KiCad, with in-house DFM review, impedance control, and rapid prototyping turnaround.</p><div className="tag-list"><span className="tag">Altium</span><span className="tag">KiCad</span><span className="tag">Multi-layer</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.1s' }}><div className="service-card-icon">🧩</div><h3>IC Integration</h3><p>Precision placement and soldering of surface-mount and through-hole ICs — from microcontrollers and FPGAs to analog signal chains.</p><div className="tag-list"><span className="tag">SMT</span><span className="tag">Through-hole</span><span className="tag">FPGA</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.2s' }}><div className="service-card-icon">🍞</div><h3>Breadboard Prototyping</h3><p>Rapid proof-of-concept builds using breadboards and development kits, enabling fast validation before committing to PCB production.</p><div className="tag-list"><span className="tag">Arduino</span><span className="tag">Raspberry Pi</span><span className="tag">ESP32</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.3s' }}><div className="service-card-icon">💻</div><h3>Embedded Systems</h3><p>Firmware development, RTOS integration, and hardware-software co-design for microcontroller-based products and IoT nodes.</p><div className="tag-list"><span className="tag">RTOS</span><span className="tag">Firmware</span><span className="tag">IoT</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.4s' }}><div className="service-card-icon">🔍</div><h3>Testing &amp; Inspection</h3><p>AOI, ICT, and functional testing with full traceability reports — ensuring every board meets specification before it ships.</p><div className="tag-list"><span className="tag">AOI</span><span className="tag">ICT</span><span className="tag">X-Ray</span></div></div>
-            <div className="service-card reveal" style={{ transitionDelay: '0.5s' }}><div className="service-card-icon">📦</div><h3>Box Build Assembly</h3><p>Complete box-build and system integration services — from sub-assembly to final enclosure wiring, labeling, and delivery.</p><div className="tag-list"><span className="tag">Box Build</span><span className="tag">Harness</span><span className="tag">Final Assembly</span></div></div>
-          </div>
-        </div>
-      </section>
+            {/* ─── ELECTRONICS ─── */}
+            <section id="electronics">
+              <div className="container">
+                <div style={{ maxWidth: 640, marginBottom: 56 }} className="reveal">
+                  <span className="section-tag">Electronics</span>
+                  <h2 className="section-h2">Electronic <span className="red">Components &amp; Integration</span></h2>
+                  <p className="section-p">From bare PCBs to complex IC-level assemblies — we handle every layer of your electronic stack with precision and expertise.</p>
+                </div>
+                <div className="services-grid">
+                  <div className="service-card reveal" style={{ transitionDelay: '0s' }}><div className="service-card-icon">🔲</div><h3>PCB Design &amp; Fabrication</h3><p>Multi-layer PCB design using Altium &amp; KiCad, with in-house DFM review, impedance control, and rapid prototyping turnaround.</p><div className="tag-list"><span className="tag">Altium</span><span className="tag">KiCad</span><span className="tag">Multi-layer</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.1s' }}><div className="service-card-icon">🧩</div><h3>IC Integration</h3><p>Precision placement and soldering of surface-mount and through-hole ICs — from microcontrollers and FPGAs to analog signal chains.</p><div className="tag-list"><span className="tag">SMT</span><span className="tag">Through-hole</span><span className="tag">FPGA</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.2s' }}><div className="service-card-icon">🍞</div><h3>Breadboard Prototyping</h3><p>Rapid proof-of-concept builds using breadboards and development kits, enabling fast validation before committing to PCB production.</p><div className="tag-list"><span className="tag">Arduino</span><span className="tag">Raspberry Pi</span><span className="tag">ESP32</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.3s' }}><div className="service-card-icon">💻</div><h3>Embedded Systems</h3><p>Firmware development, RTOS integration, and hardware-software co-design for microcontroller-based products and IoT nodes.</p><div className="tag-list"><span className="tag">RTOS</span><span className="tag">Firmware</span><span className="tag">IoT</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.4s' }}><div className="service-card-icon">🔍</div><h3>Testing &amp; Inspection</h3><p>AOI, ICT, and functional testing with full traceability reports — ensuring every board meets specification before it ships.</p><div className="tag-list"><span className="tag">AOI</span><span className="tag">ICT</span><span className="tag">X-Ray</span></div></div>
+                  <div className="service-card reveal" style={{ transitionDelay: '0.5s' }}><div className="service-card-icon">📦</div><h3>Box Build Assembly</h3><p>Complete box-build and system integration services — from sub-assembly to final enclosure wiring, labeling, and delivery.</p><div className="tag-list"><span className="tag">Box Build</span><span className="tag">Harness</span><span className="tag">Final Assembly</span></div></div>
+                </div>
+              </div>
+            </section>
+          </>
+        )
+      }
 
       {/* ─── LOCATION & CONTACT ─── */}
-      <section id="location">
-        <div className="container">
-          <div style={{ marginBottom: 56 }} className="reveal">
-            <span className="section-tag">Find Us</span>
-            <h2 className="section-h2">We're Located in <span className="red">Hyderabad</span></h2>
-            <p className="section-p">Visit our facility or get in touch — we're always ready to discuss your next electronics project.</p>
-          </div>
-          <div className="location-grid">
-            <div className="location-info reveal-left">
-              <div className="location-detail"><div className="loc-icon">📍</div><div className="loc-text"><h4>Address</h4><p>{CONTACT_DETAILS.addressLines.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.addressLines.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
-              <div className="location-detail"><div className="loc-icon">📞</div><div className="loc-text"><h4>Phone</h4><p><a href={CONTACT_DETAILS.phoneHref}>{CONTACT_DETAILS.phoneDisplay}</a></p></div></div>
-              <div className="location-detail"><div className="loc-icon">📧</div><div className="loc-text"><h4>Email</h4><p><a href={CONTACT_DETAILS.emailHref}>{CONTACT_DETAILS.email}</a></p></div></div>
-              <div className="location-detail"><div className="loc-icon">🕐</div><div className="loc-text"><h4>Working Hours</h4><p>{CONTACT_DETAILS.hours.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.hours.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
-            </div>
-
-            <div className="contact-form-wrapper reveal-right">
-              <form className="contact-form" onSubmit={handleContactSubmit}>
-                <h4 style={{ marginBottom: 16, fontSize: '20px' }}>Send a Request</h4>
-                <div className="contact-form-grid">
-                  <input name="name" placeholder="Your Name" required />
-                  <input name="email" placeholder="Your Email" required />
-                  <input name="phone" placeholder="Phone (optional)" />
-                  <input name="company" placeholder="Company (optional)" />
+      {
+        (currentPath === '/' || currentPath === '/contact-us') && (
+          <section id="location">
+            <div className="container">
+              <div style={{ marginBottom: 56 }} className="reveal">
+                <span className="section-tag">Find Us</span>
+                <h2 className="section-h2">We're Located in <span className="red">Hyderabad</span></h2>
+                <p className="section-p">Visit our facility or get in touch — we're always ready to discuss your next electronics project.</p>
+              </div>
+              <div className="location-grid">
+                <div className="location-info reveal-left">
+                  <div className="location-detail"><div className="loc-icon">📍</div><div className="loc-text"><h4>Address</h4><p>{CONTACT_DETAILS.addressLines.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.addressLines.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
+                  <div className="location-detail"><div className="loc-icon">📞</div><div className="loc-text"><h4>Phone</h4><p><a href={CONTACT_DETAILS.phoneHref}>{CONTACT_DETAILS.phoneDisplay}</a></p></div></div>
+                  <div className="location-detail"><div className="loc-icon">📧</div><div className="loc-text"><h4>Email</h4><p><a href={CONTACT_DETAILS.emailHref}>{CONTACT_DETAILS.email}</a></p></div></div>
+                  <div className="location-detail"><div className="loc-icon">🕐</div><div className="loc-text"><h4>Working Hours</h4><p>{CONTACT_DETAILS.hours.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.hours.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
                 </div>
-                <select name="enquiryType" style={{ marginTop: 12 }} defaultValue="">
-                  <option value="" disabled>I am a...</option>
-                  <option value="client">Client / Customer</option>
-                  <option value="job_seeker">Job Applicant / Career</option>
-                  <option value="partner">Business Partner / Vendor</option>
-                  <option value="other">Other</option>
-                </select>
-                <input name="service" placeholder="Service you're interested in (optional)" style={{ marginTop: 12 }} />
-                <textarea name="message" placeholder="Tell us about your project..." required style={{ marginTop: 12 }}></textarea>
-                <button className="btn-primary" type="submit" style={{ marginTop: 16, width: '100%' }} disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send Request'}
-                </button>
-                {formState.message ? (
-                  <p className={`contact-status ${formState.type}`} aria-live="polite">{formState.message}</p>
-                ) : null}
-              </form>
-            </div>
-          </div>
 
-          <div className="map-container reveal" style={{ marginTop: 48 }}>
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.0!2d78.4475!3d17.4350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb90c7e9b5b1f7%3A0x48c3e0ece5e8c4a8!2sVengalrao%20Nagar%2C%20Hyderabad%2C%20Telangana%20500038!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="AMIGO Integrators Location - Vengalrao Nagar"
-            ></iframe>
-          </div>
-        </div>
-      </section>
+                <div className="contact-form-wrapper reveal-right">
+                  <form className="contact-form" onSubmit={handleContactSubmit}>
+                    <h4 style={{ marginBottom: 16, fontSize: '20px' }}>Send a Request</h4>
+                    <div className="contact-form-grid">
+                      <input name="name" placeholder="Your Name" required />
+                      <input name="email" placeholder="Your Email" required />
+                      <input name="phone" placeholder="Phone (optional)" />
+                      <input name="company" placeholder="Company (optional)" />
+                    </div>
+                    <select name="enquiryType" style={{ marginTop: 12 }} defaultValue="">
+                      <option value="" disabled>I am a...</option>
+                      <option value="client">Client / Customer</option>
+                      <option value="job_seeker">Job Applicant / Career</option>
+                      <option value="partner">Business Partner / Vendor</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <input name="service" placeholder="Service you're interested in (optional)" style={{ marginTop: 12 }} />
+                    <textarea name="message" placeholder="Tell us about your project..." required style={{ marginTop: 12 }}></textarea>
+                    <button className="btn-primary" type="submit" style={{ marginTop: 16, width: '100%' }} disabled={isSubmitting}>
+                      {isSubmitting ? 'Sending...' : 'Send Request'}
+                    </button>
+                    {formState.message ? (
+                      <p className={`contact-status ${formState.type}`} aria-live="polite">{formState.message}</p>
+                    ) : null}
+                  </form>
+                </div>
+              </div>
+
+              <div className="map-container reveal" style={{ marginTop: 48 }}>
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.0!2d78.4475!3d17.4350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb90c7e9b5b1f7%3A0x48c3e0ece5e8c4a8!2sVengalrao%20Nagar%2C%20Hyderabad%2C%20Telangana%20500038!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="AMIGO Integrators Location - Vengalrao Nagar"
+                ></iframe>
+              </div>
+            </div>
+          </section>
+        )
+      }
 
       {/* ─── FOOTER ─── */}
       <footer>
@@ -543,20 +609,21 @@ export default function App() {
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><a href="#mission">About Us</a></li>
-              <li><a href="#how-we-work">How We Work</a></li>
-              <li><a href="#location">Our Location</a></li>
-              <li><a href="#location">Careers</a></li>
+              <li><a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>About Us</a></li>
+              <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }}>Services</a></li>
+              <li><a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); }}>Gallery</a></li>
+              <li><a href="/contact-us" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Contact Us</a></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Services</h4>
             <ul>
-              <li><a href="#electrical">PCB Design &amp; Fab</a></li>
-              <li><a href="#electrical">IC Integration</a></li>
-              <li><a href="#electronics">Embedded Systems</a></li>
-              <li><a href="#electronics">Prototyping</a></li>
-              <li><a href="#electronics">Quality Testing</a></li>
+              <li><a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); }}>Electrical</a></li>
+              <li><a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); }}>Electronic</a></li>
+              <li><a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); }}>Mechanical</a></li>
+              <li><a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); }}>Service Provided</a></li>
+              <li><a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); }}>Trading</a></li>
+              <li><a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); }}>IT Support</a></li>
             </ul>
           </div>
           <div className="footer-col">

@@ -426,7 +426,7 @@ export default function App() {
       </section>
 
       {/* ─── STATS ─── */}
-      <section id="stats">
+      {/* <section id="stats">
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item reveal"><div className="stat-num" data-count="200">0</div><div className="stat-label">Projects Done</div></div>
@@ -435,7 +435,7 @@ export default function App() {
             <div className="stat-item reveal" style={{ transitionDelay: '0.3s' }}><div className="stat-num" data-count="99" data-suffix="%">0</div><div className="stat-label">Satisfaction</div></div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ─── ELECTRICAL ─── */}
       <section id="electrical">
@@ -573,7 +573,7 @@ export default function App() {
         </div>
       </footer>
 
-      <button id="goTopBtn" className="go-top-btn" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} title="Go to top">&uarr;</button>
+      <button id="goTopBtn" className="go-top-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Go to top">&uarr;</button>
     </>
   )
 }

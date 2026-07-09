@@ -272,13 +272,13 @@ export default function App() {
 
       {/* Logo loader */}
       <div id="loader">
-        <img src="/FINAL-removebg-preview.png" alt="Loading" className="loader-logo" />
+        <img src="/AMIGO-BG-REMOVED.png" alt="Loading" className="loader-logo" />
         <p className="loader-text">AMIGO Integrators</p>
       </div>
 
       <nav id="navbar">
         <a href="#" className="nav-logo">
-          <img src="/FINAL-removebg-preview.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 200, width: 200, marginLeft: -25 }} />
+          <img src="/AMIGO-BG-REMOVED.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 120, width: 120, marginLeft: 30 }} />
         </a>
         <ul className="nav-links">
           <li><a href="#mission">About Us</a></li>
@@ -536,9 +536,9 @@ export default function App() {
         <div className="footer-grid">
           <div className="footer-brand" style={{ marginTop: -80 }}>
             <a href="#" className="footer-logo">
-              <img src="/FINAL-removebg-preview.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 200, width: 200, marginLeft: -25 }} />
+              <img src="/AMIGO-BG-REMOVED.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 150, width: 150, marginLeft: 0 }} />
             </a>
-            <p style={{ marginTop: -80 }}>Precision electronics integration for modern industry. PCBs, ICs, breadboards, and complete embedded systems built to specification and tested to perfection.</p>
+            <p style={{ marginTop: -50 }}>Precision electronics integration for modern industry. PCBs, ICs, breadboards, and complete embedded systems built to specification and tested to perfection.</p>
           </div>
           <div className="footer-col">
             <h4>Company</h4>

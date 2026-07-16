@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#00264A" />
+      <stop offset="50%" stopColor="#00509E" />
+      <stop offset="100%" stopColor="#00264A" />
+    </linearGradient>
+    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#ffea00" />
+      <stop offset="100%" stopColor="#ff0000" stopOpacity="0" />
+    </linearGradient>
+  </defs>
+  <!-- Flame -->
+  <path d="M42 80 Q50 110 58 80 Z" fill="url(#flameGrad)" />
+  <!-- Fins Bottom -->
+  <path d="M40 60 L20 80 L20 85 L40 75 Z" fill="#003B73" />
+  <path d="M60 60 L80 80 L80 85 L60 75 Z" fill="#003B73" />
+  <!-- Missile Body -->
+  <path d="M50 10 Q40 25 40 40 L40 80 L60 80 L60 40 Q60 25 50 10 Z" fill="url(#bodyGrad)" />
+  <!-- Tip -->
+  <path d="M50 10 Q45 17.5 43.5 25 L56.5 25 Q55 17.5 50 10 Z" fill="#1E293B" />
+</svg>

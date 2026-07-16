@@ -1,10 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { MEGA_MENU_DATA, SERVICE_DETAILS } from './serviceData';
 
 const CONTACT_DETAILS = {
-  addressLines: [
+  corpAddressLines: [
     'Vaishnavi Tanmayi Residency, #102, 1st Floor',
     '193 -C, Vengalrao Nagar',
     'Hyderabad - 500038-TS',
+  ],
+  opAddressLines: [
+    'Flat- 404, Ankura Apartments',
+    'Road No.05, Shailajapuri colony, Mansoorabadh',
+    'Nagole, Hyderabad - 500068',
   ],
   phoneDisplay: '+91 90001 20988',
   phoneHref: 'tel:+919000120988',
@@ -79,6 +85,18 @@ const GALLERY_IMAGES = [
   { src: '/profile/images/image-012.jpg', caption: 'Car Charging Gun Assembly' },
 ]
 
+const CLIENTS_LIST = [
+  { name: 'Paras Defence', img: '/clients/Paras.png' },
+  { name: 'RCI', img: '/clients/rci.svg' },
+  { name: 'DRDO', img: '/clients/DRDO - Image.png' },
+  { name: 'BEL', img: '/clients/BEL.png' },
+  { name: 'BDL', img: '/clients/BDL.png' },
+  { name: 'L&T Defence', img: '/clients/L&T Defence.jpg' },
+  { name: 'Indian Railways', img: '/clients/Indian Railways.jpg' },
+  { name: 'ASL', img: '/clients/ASL.jpg' },
+  { name: 'NSTL', img: '/clients/NSTL.png' }
+];
+
 export default function App() {
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -93,9 +111,15 @@ export default function App() {
   }, [])
 
   const navigate = (path) => {
-    window.history.pushState({}, '', path)
-    setCurrentPath(path)
-    window.scrollTo(0, 0)
+    const loader = document.getElementById('loader')
+    if (loader) loader.classList.remove('hide')
+
+    setTimeout(() => {
+      window.history.pushState({}, '', path)
+      setCurrentPath(path)
+      window.scrollTo(0, 0)
+      setTimeout(() => loader?.classList.add('hide'), 600)
+    }, 400)
   }
 
   useEffect(() => {
@@ -111,8 +135,8 @@ export default function App() {
       if (progressBar) progressBar.style.width = ((scrollTop / scrollHeight) * 100) + '%'
 
       // Go-top button visibility
-      if (goTopBtn && missionSection) {
-        if (window.scrollY >= missionSection.offsetTop - 100) {
+      if (goTopBtn) {
+        if (window.scrollY > 300) {
           goTopBtn.classList.add('visible')
         } else {
           goTopBtn.classList.remove('visible')
@@ -164,8 +188,8 @@ export default function App() {
 
     // HOVER EVENTS
     const hoverTargets = document.querySelectorAll('a,button,.mission-card,.step-card,.highlight-card')
-    const onEnter = () => { if (ring) { ring.style.width = '52px'; ring.style.height = '52px'; ring.style.borderColor = 'rgba(232,16,16,0.8)' } }
-    const onLeave = () => { if (ring) { ring.style.width = '32px'; ring.style.height = '32px'; ring.style.borderColor = 'rgba(232,16,16,0.5)' } }
+    const onEnter = () => { if (ring) { ring.style.width = '52px'; ring.style.height = '52px'; ring.style.borderColor = 'rgba(0,59,115,0.8)' } }
+    const onLeave = () => { if (ring) { ring.style.width = '32px'; ring.style.height = '32px'; ring.style.borderColor = 'rgba(0,59,115,0.5)' } }
     hoverTargets.forEach(el => { el.addEventListener('mouseenter', onEnter); el.addEventListener('mouseleave', onLeave) })
 
     // CAROUSEL
@@ -289,10 +313,27 @@ export default function App() {
       <div className="cursor-dot" id="cursorDot"></div>
       <div className="cursor-ring" id="cursorRing"></div>
 
-      {/* Logo loader */}
+      {/* Missile loader */}
       <div id="loader">
-        <img src="/AMIGO-BG-REMOVED.png" alt="Loading" className="loader-logo" />
-        <p className="loader-text">AMIGO Integrators</p>
+        <svg className="loader-missile" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="loaderBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#00264A" />
+              <stop offset="50%" stopColor="#00509E" />
+              <stop offset="100%" stopColor="#00264A" />
+            </linearGradient>
+            <linearGradient id="loaderFlameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffea00" />
+              <stop offset="100%" stopColor="#ff0000" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M42 80 Q50 110 58 80 Z" fill="url(#loaderFlameGrad)" />
+          <path d="M40 60 L20 80 L20 85 L40 75 Z" fill="#003B73" />
+          <path d="M60 60 L80 80 L80 85 L60 75 Z" fill="#003B73" />
+          <path d="M50 10 Q40 25 40 40 L40 80 L60 80 L60 40 Q60 25 50 10 Z" fill="url(#loaderBodyGrad)" />
+          <path d="M50 10 Q45 17.5 43.5 25 L56.5 25 Q55 17.5 50 10 Z" fill="#1E293B" />
+        </svg>
+        <p className="loader-text">Loading...</p>
       </div>
 
       <nav id="navbar">
@@ -301,16 +342,24 @@ export default function App() {
         </a>
         <ul className="nav-links">
           <li><a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>About Us</a></li>
-          <li className="dropdown">
-            <a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }}>Services</a>
-            <ul className="dropdown-menu" style={{ marginTop: 14 }}>
-              <li><a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); }}>Electrical</a></li>
-              <li><a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); }}>Electronic</a></li>
-              <li><a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); }}>Mechanical</a></li>
-              <li><a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); }}>Service Provided</a></li>
-              <li><a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); }}>Trading</a></li>
-              <li><a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); }}>IT Support</a></li>
-            </ul>
+          <li className="mega-dropdown">
+            <a href="#" onClick={(e) => e.preventDefault()} style={{ cursor: 'default' }}>Services</a>
+            <div className="mega-menu" style={{ marginTop: 14 }}>
+              {Object.entries(MEGA_MENU_DATA).map(([catKey, category]) => (
+                <div key={catKey} className="mega-menu-col">
+                  <h4>{category.title}</h4>
+                  <ul>
+                    {category.items.map(item => (
+                      <li key={item.id}>
+                        <a href={`/${catKey}/${item.id}`} onClick={(e) => { e.preventDefault(); navigate(`/${catKey}/${item.id}`); }}>
+                          {item.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </li>
           <li><a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); }}>Gallery</a></li>
           <li><a href="/contact-us" className="nav-cta" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Contact Us</a></li>
@@ -322,14 +371,18 @@ export default function App() {
 
       <div className="mobile-menu" id="mobileMenu">
         <a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); window.closeMobile?.(); }}>About Us</a>
-        <a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); window.closeMobile?.(); }}>Services</a>
-        <div className="mobile-dropdown">
-          <a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); window.closeMobile?.(); }}>- Electrical</a>
-          <a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); window.closeMobile?.(); }}>- Electronic</a>
-          <a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); window.closeMobile?.(); }}>- Mechanical</a>
-          <a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); window.closeMobile?.(); }}>- Service Provided</a>
-          <a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); window.closeMobile?.(); }}>- Trading</a>
-          <a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); window.closeMobile?.(); }}>- IT Support</a>
+        <div style={{ fontWeight: 600, fontSize: '16px', padding: '12px 0', borderBottom: '1px solid var(--gray-mid)' }}>Services</div>
+        <div className="mobile-dropdown" style={{ maxHeight: '40vh', overflowY: 'auto' }}>
+          {Object.entries(MEGA_MENU_DATA).map(([catKey, category]) => (
+            <React.Fragment key={catKey}>
+              <div style={{ paddingLeft: '16px', fontWeight: 'bold', margin: '12px 0 4px', fontSize: '14px', color: 'var(--red)' }}>{category.title}</div>
+              {category.items.map(item => (
+                <a key={item.id} href={`/${catKey}/${item.id}`} style={{ paddingLeft: '24px', fontSize: '14px', paddingTop: '6px', paddingBottom: '6px' }} onClick={(e) => { e.preventDefault(); navigate(`/${catKey}/${item.id}`); window.closeMobile?.(); }}>
+                  - {item.title}
+                </a>
+              ))}
+            </React.Fragment>
+          ))}
         </div>
         <a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); window.closeMobile?.(); }}>Gallery</a>
         <a href="/contact-us" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); window.closeMobile?.(); }}>Contact Us</a>
@@ -343,44 +396,71 @@ export default function App() {
             <div className="hero-bg-glow"></div>
             <div className="hero-circuit-lines">
               <svg className="circuit-svg" viewBox="0 0 1440 300" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 200 L200 200 L200 120 L400 120 L400 200 L600 200 L600 80 L800 80 L800 200 L1000 200 L1000 140 L1200 140 L1200 200 L1440 200" stroke="#E81010" strokeWidth="2" fill="none" />
-                <circle cx="200" cy="200" r="6" fill="#E81010" /><circle cx="400" cy="120" r="6" fill="#E81010" />
-                <circle cx="600" cy="200" r="6" fill="#E81010" /><circle cx="800" cy="80" r="6" fill="#E81010" />
-                <circle cx="1000" cy="200" r="6" fill="#E81010" /><circle cx="1200" cy="140" r="6" fill="#E81010" />
-                <path d="M0 260 L300 260 L300 180 L500 180 L500 260 L700 260 L700 160 L900 160 L900 260 L1100 260" stroke="#E81010" strokeWidth="1.5" fill="none" opacity="0.5" />
+                <path d="M0 200 L200 200 L200 120 L400 120 L400 200 L600 200 L600 80 L800 80 L800 200 L1000 200 L1000 140 L1200 140 L1200 200 L1440 200" stroke="#003B73" strokeWidth="2" fill="none" />
+                <circle cx="200" cy="200" r="6" fill="#003B73" /><circle cx="400" cy="120" r="6" fill="#003B73" />
+                <circle cx="600" cy="200" r="6" fill="#003B73" /><circle cx="800" cy="80" r="6" fill="#003B73" />
+                <circle cx="1000" cy="200" r="6" fill="#003B73" /><circle cx="1200" cy="140" r="6" fill="#003B73" />
+                <path d="M0 260 L300 260 L300 180 L500 180 L500 260 L700 260 L700 160 L900 160 L900 260 L1100 260" stroke="#003B73" strokeWidth="1.5" fill="none" opacity="0.5" />
               </svg>
             </div>
             <div className="hero-inner">
               <div className="hero-content">
                 <div className="hero-badge"><span className="dot"></span> Electronic Systems Integrator</div>
-                <h1 className="hero-h1">Precision Built<span className="accent">Electronics</span>Integration</h1>
-                <p className="hero-p">From PCBs and ICs to complete electronic assemblies — we design, build, and integrate cutting-edge electronic systems for industry and innovation.</p>
-                <div className="hero-btns">
+                <h1 className="hero-h1" style={{ fontSize: '36px', lineHeight: '1.2' }}>Engineering Precision.<br /><span className="accent">Delivering Reliable Connectivity.</span></h1>
+                <div className="hero-p" style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <p>We are a specialized engineering and manufacturing company providing high-quality electrical, electronic, and electromechanical solutions for Defence, Automotive, Railway, and Industrial applications.</p>
+                  <p>Our expertise includes Defence Cable Harness Manufacturing, PCB Design and Assembly, Relay Unit Wiring and Testing, Mechanical Box Preparation, Test JIG and Rack Electrical Harness Preparation, and Mechanical Assembly. We also provide EV Battery Charging Cables and Locomotive Cable solutions engineered to meet demanding operational and performance requirements.</p>
+                  <p>In addition to our engineering and manufacturing capabilities, we supply and trade a wide range of Defence and industrial-grade products, including specialized cables, MIL-grade connectors, relays, PCB components, and other critical electrical and electronic components.</p>
+                  <p>With a strong focus on quality, precision, reliability, and technical excellence, we are committed to delivering customized solutions that meet specific project requirements and industry standards. From component sourcing and prototyping to assembly, wiring, testing, and final integration, we support our customers throughout the product development and manufacturing lifecycle.</p>
+                  <p><strong style={{ color: 'var(--red)' }}>Precision Engineered. Quality Assured. Mission Ready.</strong></p>
+                </div>
+                <div className="hero-btns" style={{ marginTop: '16px' }}>
                   <a href="/about-us" className="btn-primary" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>Discover More</a>
                   <a href="/contact-us" className="btn-outline" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Get In Touch</a>
                 </div>
               </div>
               <div className="hero-visual">
-                <div className="pcb-board" id="pcbBoard">
-                  <div className="pcb-trace" style={{ width: 180, height: 3, top: 80, left: 30 }}></div>
-                  <div className="pcb-trace" style={{ width: 3, height: 80, top: 80, left: 80 }}></div>
-                  <div className="pcb-trace" style={{ width: 120, height: 3, top: 160, left: 80 }}></div>
-                  <div className="pcb-trace" style={{ width: 3, height: 60, top: 220, left: 200 }}></div>
-                  <div className="pcb-trace" style={{ width: 100, height: 3, top: 280, left: 100 }}></div>
-                  <div className="pcb-trace" style={{ width: 3, height: 100, top: 180, left: 300 }}></div>
-                  <div className="pcb-trace" style={{ width: 80, height: 3, top: 180, left: 220 }}></div>
-                  <div className="ic-chip" style={{ width: 80, height: 50, top: 100, left: 140 }} data-label="IC-01"></div>
-                  <div className="ic-chip" style={{ width: 60, height: 40, top: 200, left: 60 }} data-label="MCU"></div>
-                  <div className="ic-chip" style={{ width: 50, height: 50, top: 60, left: 260 }} data-label="OSC"></div>
-                  <div className="pin-row" style={{ top: 95, left: 148 }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
-                  <div className="pin-row" style={{ top: 148, left: 148, transform: 'rotate(180deg)' }}><div className="pin"></div><div className="pin"></div><div className="pin"></div><div className="pin"></div></div>
-                  <div className="led-dot" style={{ width: 12, height: 12, background: '#E81010', top: 240, left: 260, boxShadow: '0 0 10px #E81010' }}></div>
-                  <div className="led-dot" style={{ width: 10, height: 10, background: '#00ff88', top: 40, left: 40, boxShadow: '0 0 10px #00ff88', animationDelay: '0.7s' }}></div>
-                  <div className="led-dot" style={{ width: 8, height: 8, background: '#ffaa00', top: 300, left: 180, boxShadow: '0 0 8px #ffaa00', animationDelay: '1.3s' }}></div>
-                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, left: 12 }}></div>
-                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', top: 12, right: 12 }}></div>
-                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, left: 12 }}></div>
-                  <div style={{ position: 'absolute', width: 12, height: 12, borderRadius: '50%', border: '2px solid #2a5a2a', bottom: 12, right: 12 }}></div>
+                <div className="missile-visual" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                  <style>
+                    {`
+                      @keyframes flicker { 0% { opacity: 0.7; transform: scaleY(0.9); } 100% { opacity: 1; transform: scaleY(1.1); } }
+                      .flame-anim { animation: flicker 0.15s infinite alternate; transform-origin: center top; }
+                      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+                      .missile-float { animation: float 4s ease-in-out infinite; }
+                    `}
+                  </style>
+                  <svg viewBox="0 0 200 600" width="100%" height="500px" xmlns="http://www.w3.org/2000/svg" className="missile-float">
+                    <defs>
+                      <linearGradient id="missileGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#b3b3b3" />
+                        <stop offset="50%" stopColor="#f0f0f0" />
+                        <stop offset="100%" stopColor="#7a7a7a" />
+                      </linearGradient>
+                      <linearGradient id="flameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#ffea00" />
+                        <stop offset="50%" stopColor="#ff5500" />
+                        <stop offset="100%" stopColor="#ff0000" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {/* Flame */}
+                    <path d="M 85 450 Q 100 650 115 450 Z" fill="url(#flameGrad)" className="flame-anim" />
+                    {/* Fins Bottom */}
+                    <path d="M 80 380 L 40 450 L 40 460 L 80 440 Z" fill="#003B73" />
+                    <path d="M 120 380 L 160 450 L 160 460 L 120 440 Z" fill="#003B73" />
+                    {/* Fins Middle */}
+                    <path d="M 80 230 L 55 270 L 55 300 L 80 290 Z" fill="#003B73" />
+                    <path d="M 120 230 L 145 270 L 145 300 L 120 290 Z" fill="#003B73" />
+                    {/* Missile Body */}
+                    <path d="M 100 40 Q 80 90 80 150 L 80 450 L 120 450 L 120 150 Q 120 90 100 40 Z" fill="url(#missileGrad)" />
+                    {/* Dark Tip */}
+                    <path d="M 100 40 Q 90 65 85 100 L 115 100 Q 110 65 100 40 Z" fill="#222" />
+                    <path d="M 100 40 Q 98 45 99 50 L 101 50 Q 102 45 100 40 Z" fill="#003B73" />
+                    {/* Bands */}
+                    <rect x="80" y="150" width="40" height="5" fill="#333" />
+                    <rect x="80" y="360" width="40" height="5" fill="#333" />
+                    {/* BRAHMOS Text */}
+                    <text x="-340" y="107" transform="rotate(-90)" fill="#003B73" fontSize="26" fontWeight="900" letterSpacing="5" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>BRAHMOS</text>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -390,7 +470,7 @@ export default function App() {
 
       {/* ─── ABOUT US ─── */}
       {
-        (currentPath === '/' || currentPath === '/about-us') && (
+        (currentPath === '/about-us') && (
           <>
             <section id="mission">
               <div className="container">
@@ -434,7 +514,7 @@ export default function App() {
 
       {/* ─── GALLERY ─── */}
       {
-        (currentPath === '/' || currentPath === '/gallery') && (
+        (currentPath === '/gallery') && (
           <section id="gallery" style={{ padding: '72px 0', background: 'var(--white)' }}>
             <div className="container">
               {/* Full-width carousel */}
@@ -496,6 +576,121 @@ export default function App() {
         </div>
       </section> */}
 
+            {/* ─── CLIENTS SCROLL ─── */}
+            {
+              currentPath === '/' && (
+                <section id="clients-list" style={{ padding: '60px 0', background: 'var(--white)', overflow: 'hidden' }}>
+                  <div className="container" style={{ textAlign: 'center', marginBottom: '32px' }}>
+                    <h3 className="section-h2" style={{ fontSize: '28px' }}>Our <span className="red">Clients</span></h3>
+                  </div>
+                  <div style={{ position: 'relative', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    <style>
+                      {`
+                        @keyframes scrollLeft {
+                          0% { transform: translateX(0); }
+                          100% { transform: translateX(-50%); }
+                        }
+                        .clients-track {
+                          display: inline-block;
+                          animation: scrollLeft 30s linear infinite;
+                        }
+                        .clients-track:hover {
+                          animation-play-state: paused;
+                        }
+                        .client-logo {
+                          display: inline-flex;
+                          align-items: center;
+                          gap: 16px;
+                          padding: 16px 32px;
+                          margin: 0 16px;
+                          font-size: 18px;
+                          font-weight: 700;
+                          color: #1E293B;
+                          background: #f8f9fa;
+                          border: 1px solid #eaeaea;
+                          border-radius: 12px;
+                          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+                          transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+                        }
+                        .client-logo:hover {
+                          transform: translateY(-4px);
+                          box-shadow: 0 8px 24px rgba(0, 59, 115, 0.12);
+                          border-color: rgba(0, 59, 115, 0.2);
+                        }
+                        .client-logo img {
+                          width: 48px;
+                          height: 48px;
+                          object-fit: contain;
+                          filter: grayscale(100%) opacity(0.8);
+                          transition: filter 0.3s ease;
+                        }
+                        .client-logo:hover img {
+                          filter: grayscale(0%) opacity(1);
+                        }
+                      `}
+                    </style>
+                    <div className="clients-track">
+                      {[...CLIENTS_LIST, ...CLIENTS_LIST, ...CLIENTS_LIST].map((client, idx) => (
+                        <div key={idx} className="client-logo">
+                          <img src={client.img} alt={client.name} />
+                          <span>{client.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )
+            }
+          </>
+        )
+      }
+
+      {/* ─── DYNAMIC SERVICE DETAILS ─── */}
+      {
+        (() => {
+          const parts = currentPath.split('/').filter(Boolean);
+          if (parts.length === 2) {
+            const [catKey, itemId] = parts;
+            if (MEGA_MENU_DATA[catKey] && SERVICE_DETAILS[itemId]) {
+              const detail = SERVICE_DETAILS[itemId];
+              return (
+                <section id="service-detail" style={{ background: 'var(--white)', minHeight: '80vh', paddingTop: '140px' }}>
+                  <div className="container">
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                      <span className="section-tag" style={{ marginBottom: 24 }}>{detail.tag}</span>
+                      <h2 className="section-h2" style={{ marginBottom: 32, fontSize: 'clamp(32px, 4vw, 56px)' }}>{detail.title}</h2>
+                      <p className="section-p" style={{ fontSize: '18px', color: 'var(--gray-text)', marginBottom: 48, lineHeight: 1.8, maxWidth: '100%' }}>
+                        {detail.description}
+                      </p>
+
+                      <h3 style={{ fontSize: '22px', marginBottom: 24, fontWeight: 700, color: 'var(--black)' }}>Key Capabilities & Features</h3>
+                      <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 56 }}>
+                        {detail.features.map((feature, idx) => (
+                          <div key={idx} style={{ background: 'var(--gray-light)', padding: '24px', borderRadius: 12, borderLeft: '4px solid var(--red)', fontWeight: 600, color: 'var(--black)', fontSize: '15px' }}>
+                            {feature}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ padding: '40px', background: 'var(--red-dark)', borderRadius: 16, color: 'white', textAlign: 'center', marginTop: 40 }}>
+                        <h3 style={{ fontSize: '24px', marginBottom: 16 }}>Ready to get started?</h3>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: 32, fontSize: '16px' }}>Contact our engineering team to discuss your specific requirements.</p>
+                        <a href="/contact-us" className="btn-primary" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }} style={{ background: 'var(--white)', color: 'var(--red-dark)', padding: '16px 40px', fontSize: '16px' }}>Enquire Now</a>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )
+            }
+          }
+          return null;
+        })()
+      }
+
+      {/* ─── ELECTRICAL & ELECTRONICS ─── */}
+      {
+        (currentPath.startsWith('/services')) && (
+          <>
             {/* ─── ELECTRICAL ─── */}
             <section id="electrical">
               <div className="container">
@@ -547,50 +742,52 @@ export default function App() {
                 <h2 className="section-h2">We're Located in <span className="red">Hyderabad</span></h2>
                 <p className="section-p">Visit our facility or get in touch — we're always ready to discuss your next electronics project.</p>
               </div>
-              <div className="location-grid">
+              <div className="location-grid" style={{ alignItems: 'stretch' }}>
                 <div className="location-info reveal-left">
-                  <div className="location-detail"><div className="loc-icon">📍</div><div className="loc-text"><h4>Address</h4><p>{CONTACT_DETAILS.addressLines.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.addressLines.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
+                  <div className="location-detail"><div className="loc-icon">🏢</div><div className="loc-text"><h4>Corporate Address</h4><p>{CONTACT_DETAILS.corpAddressLines.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.corpAddressLines.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
+                  <div className="location-detail"><div className="loc-icon">🏭</div><div className="loc-text"><h4>Operational Address</h4><p>{CONTACT_DETAILS.opAddressLines.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.opAddressLines.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
                   <div className="location-detail"><div className="loc-icon">📞</div><div className="loc-text"><h4>Phone</h4><p><a href={CONTACT_DETAILS.phoneHref}>{CONTACT_DETAILS.phoneDisplay}</a></p></div></div>
                   <div className="location-detail"><div className="loc-icon">📧</div><div className="loc-text"><h4>Email</h4><p><a href={CONTACT_DETAILS.emailHref}>{CONTACT_DETAILS.email}</a></p></div></div>
                   <div className="location-detail"><div className="loc-icon">🕐</div><div className="loc-text"><h4>Working Hours</h4><p>{CONTACT_DETAILS.hours.map((line, i) => (<React.Fragment key={line}>{line}{i < CONTACT_DETAILS.hours.length - 1 ? <br /> : null}</React.Fragment>))}</p></div></div>
                 </div>
 
-                <div className="contact-form-wrapper reveal-right">
-                  <form className="contact-form" onSubmit={handleContactSubmit}>
-                    <h4 style={{ marginBottom: 16, fontSize: '20px' }}>Send a Request</h4>
-                    <div className="contact-form-grid">
-                      <input name="name" placeholder="Your Name" required />
-                      <input name="email" placeholder="Your Email" required />
-                      <input name="phone" placeholder="Phone (optional)" />
-                      <input name="company" placeholder="Company (optional)" />
-                    </div>
-                    <select name="enquiryType" style={{ marginTop: 12 }} defaultValue="">
-                      <option value="" disabled>I am a...</option>
-                      <option value="client">Client / Customer</option>
-                      <option value="job_seeker">Job Applicant / Career</option>
-                      <option value="partner">Business Partner / Vendor</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <input name="service" placeholder="Service you're interested in (optional)" style={{ marginTop: 12 }} />
-                    <textarea name="message" placeholder="Tell us about your project..." required style={{ marginTop: 12 }}></textarea>
-                    <button className="btn-primary" type="submit" style={{ marginTop: 16, width: '100%' }} disabled={isSubmitting}>
-                      {isSubmitting ? 'Sending...' : 'Send Request'}
-                    </button>
-                    {formState.message ? (
-                      <p className={`contact-status ${formState.type}`} aria-live="polite">{formState.message}</p>
-                    ) : null}
-                  </form>
+                <div className="map-container reveal-right" style={{ minHeight: '380px', height: '100%', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
+                  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1132.2145794121145!2d78.56602724926998!3d17.34925658362218!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb9f005e1988e3%3A0x274c0bf73eb08eba!2sAnkura%20Homes!5e0!3m2!1sen!2sin!4v1784113053251!5m2!1sen!2sin" width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="AMIGO Integrators Operational Address"></iframe>
                 </div>
               </div>
 
-              <div className="map-container reveal" style={{ marginTop: 48 }}>
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3807.0!2d78.4475!3d17.4350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb90c7e9b5b1f7%3A0x48c3e0ece5e8c4a8!2sVengalrao%20Nagar%2C%20Hyderabad%2C%20Telangana%20500038!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="AMIGO Integrators Location - Vengalrao Nagar"
-                ></iframe>
+              <div className="contact-form-wrapper reveal" style={{ marginTop: 64, maxWidth: '800px', margin: '64px auto 0', background: 'var(--white)', padding: 48, borderRadius: 24, boxShadow: '0 16px 48px rgba(0,0,0,0.05)', border: '1px solid var(--gray-mid)' }}>
+                <form className="contact-form" onSubmit={handleContactSubmit}>
+                  <h4 style={{ marginBottom: 16, fontSize: '26px', textAlign: 'center', color: 'var(--black)' }}>Send a Request</h4>
+                  <p style={{ textAlign: 'center', color: 'var(--gray-text)', marginBottom: 32 }}>Fill out the form below and our team will get back to you shortly.</p>
+                  <div className="contact-form-grid">
+                    <input name="name" placeholder="Your Name" required />
+                    <input name="email" placeholder="Your Email" required />
+                    <input name="phone" placeholder="Phone (optional)" />
+                    <input name="company" placeholder="Company (optional)" />
+                  </div>
+                  <select name="enquiryType" style={{ marginTop: 16 }} defaultValue="">
+                    <option value="" disabled>I am a...</option>
+                    <option value="client">Client / Customer</option>
+                    <option value="job_seeker">Job Applicant / Career</option>
+                    <option value="partner">Business Partner / Vendor</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <input name="service" placeholder="Service you're interested in (optional)" style={{ marginTop: 16 }} />
+                  <textarea name="message" placeholder="Tell us about your project..." required style={{ marginTop: 16, minHeight: '140px' }}></textarea>
+                  <button className="btn-primary" type="submit" style={{ marginTop: 24, width: '100%', fontSize: '16px', padding: '16px' }} disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'Send Request'}
+                  </button>
+                  {formState.message ? (
+                    <p className={`contact-status ${formState.type}`} aria-live="polite" style={{ marginTop: 16, textAlign: 'center' }}>{formState.message}</p>
+                  ) : null}
+                </form>
               </div>
             </div>
           </section>
@@ -600,31 +797,16 @@ export default function App() {
       {/* ─── FOOTER ─── */}
       <footer>
         <div className="footer-grid">
-          <div className="footer-brand" style={{ marginTop: -80 }}>
+          <div className="footer-brand" style={{ marginTop: -10 }}>
             <a href="#" className="footer-logo">
-              <img src="/AMIGO-BG-REMOVED.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 150, width: 150, marginLeft: 0 }} />
+              <img src="/AMIGO-BG-REMOVED.png" alt="AMIGO Integrators Pvt. Ltd" style={{ height: 100, width: 'auto', marginLeft: 0 }} />
             </a>
-            <p style={{ marginTop: -50 }}>Precision electronics integration for modern industry. PCBs, ICs, breadboards, and complete embedded systems built to specification and tested to perfection.</p>
           </div>
           <div className="footer-col">
-            <h4>Company</h4>
-            <ul>
-              <li><a href="/about-us" onClick={(e) => { e.preventDefault(); navigate('/about-us'); }}>About Us</a></li>
-              <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }}>Services</a></li>
-              <li><a href="/gallery" onClick={(e) => { e.preventDefault(); navigate('/gallery'); }}>Gallery</a></li>
-              <li><a href="/contact-us" onClick={(e) => { e.preventDefault(); navigate('/contact-us'); }}>Contact Us</a></li>
-            </ul>
+
           </div>
           <div className="footer-col">
-            <h4>Services</h4>
-            <ul>
-              <li><a href="/services/electrical" onClick={(e) => { e.preventDefault(); navigate('/services/electrical'); }}>Electrical</a></li>
-              <li><a href="/services/electronic" onClick={(e) => { e.preventDefault(); navigate('/services/electronic'); }}>Electronic</a></li>
-              <li><a href="/services/mechanical" onClick={(e) => { e.preventDefault(); navigate('/services/mechanical'); }}>Mechanical</a></li>
-              <li><a href="/services/service-provided" onClick={(e) => { e.preventDefault(); navigate('/services/service-provided'); }}>Service Provided</a></li>
-              <li><a href="/services/trading" onClick={(e) => { e.preventDefault(); navigate('/services/trading'); }}>Trading</a></li>
-              <li><a href="/services/it-support" onClick={(e) => { e.preventDefault(); navigate('/services/it-support'); }}>IT Support</a></li>
-            </ul>
+
           </div>
           <div className="footer-col">
             <h4>Connect</h4>
